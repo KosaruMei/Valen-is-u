@@ -1,0 +1,606 @@
+<!-- HELLO STRANGER | V18: LOADING PAUSE AT 030925% (Dừng lại ngắm số đẹp rồi mới hiện thư) -->
+<!DOCTYPE html>
+<html lang="VN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAKURA_HEART_V18_MEMORIES</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: radial-gradient(circle at center, #3e0a25 0%, #151030 50%, #000000 100%);
+            font-family: 'Times New Roman', serif; 
+        }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        
+        /* UI Overlay */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; pointer-events: none;
+            display: flex; flex-direction: column; 
+            align-items: center;
+            padding-top: 40px;
+            box-sizing: border-box;
+            transition: opacity 0.5s ease;
+        }
+        
+        .ui-hidden { opacity: 0; pointer-events: none !important; }
+
+        h1 { 
+            font-size: 56px; margin: 0; font-weight: 400; 
+            letter-spacing: 6px; 
+            text-shadow: 0 0 30px rgba(255, 183, 197, 0.5); 
+            background: linear-gradient(to bottom, #fff, #ffb7c5, #ff69b4);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-family: 'Cinzel', serif;
+            opacity: 0.9;
+        }
+
+        .upload-wrapper { margin-top: 20px; pointer-events: auto; text-align: center; }
+        .upload-btn {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 183, 197, 0.3); 
+            color: #ffb7c5; padding: 12px 30px; cursor: pointer; text-transform: uppercase; 
+            letter-spacing: 2px; font-size: 11px; transition: all 0.3s;
+            display: inline-block; backdrop-filter: blur(4px); border-radius: 50px;
+        }
+        .upload-btn:hover { background: rgba(255, 183, 197, 0.2); color: #fff; box-shadow: 0 0 25px rgba(255, 183, 197, 0.4); }
+
+        #gesture-guide {
+            position: absolute; top: 30px; right: 30px; z-index: 20;
+            text-align: right; pointer-events: none;
+        }
+        .guide-item {
+            color: rgba(255, 255, 255, 0.7); font-family: 'Segoe UI', sans-serif;
+            font-size: 11px; margin-bottom: 8px; letter-spacing: 1px;
+            text-transform: uppercase; text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        .guide-icon { display: inline-block; width: 20px; text-align: center; margin-left: 5px; }
+
+        #file-input { display: none; }
+        #webcam-wrapper {
+            position: absolute; bottom: 40px; right: 40px;
+            width: 120px; height: 90px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden; opacity: 0; pointer-events: none;
+        }
+
+        #loader {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease-out;
+        }
+        .loader-text { color: #ffb7c5; font-size: 14px; letter-spacing: 4px; margin-top: 20px; text-transform: uppercase; font-weight: 100; }
+        .spinner { width: 40px; height: 40px; border: 1px solid rgba(255, 183, 197, 0.2); border-top: 1px solid #ffb7c5; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- LETTER SYSTEM --- */
+        #letter-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100; background: rgba(0, 0, 0, 0.9);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s;
+            backdrop-filter: blur(8px);
+        }
+
+        #loading-container { width: 70%; max-width: 600px; text-align: center; position: relative; }
+        .progress-track {
+            width: 100%; height: 8px; background: rgba(255,255,255,0.1);
+            border-radius: 10px; position: relative; margin-top: 80px; 
+        }
+        .progress-fill {
+            width: 0%; height: 100%; background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 100%);
+            border-radius: 10px; box-shadow: 0 0 15px #ff9a9e; transition: width 0.1s linear;
+        }
+
+        /* GIF TO & RÕ */
+        #mascot-gif {
+            position: absolute;
+            width: 120px; height: auto; 
+            top: -110px; left: 0%;
+            transform: translateX(-50%); 
+            transition: left 0.1s linear;
+            z-index: 10;
+            filter: drop-shadow(0 0 10px rgba(255, 182, 193, 0.5));
+        }
+
+        #loading-text {
+            color: #fecfef; font-family: 'Courier New', monospace;
+            font-size: 24px; margin-top: 30px; letter-spacing: 3px; font-weight: bold;
+            text-shadow: 0 0 15px #ff9a9e;
+        }
+
+        #envelope-container { display: none; cursor: pointer; perspective: 1000px; }
+        .envelope {
+            width: 320px; height: 220px; background: #e0c9cb; position: relative;
+            display: flex; justify-content: center; align-items: center;
+            border-radius: 5px; box-shadow: 0 0 40px rgba(255, 183, 197, 0.5);
+            animation: float 3s ease-in-out infinite;
+        }
+        .envelope::after {
+            content: ''; position: absolute; top: 0; left: 0;
+            border-left: 160px solid transparent; border-right: 160px solid transparent;
+            border-top: 110px solid #d4b5b7; transform-origin: top; transition: transform 0.6s;
+        }
+        .envelope.open::after { transform: rotateX(180deg); }
+        .heart-seal { font-size: 50px; color: #d6336c; z-index: 2; text-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .click-hint {
+            position: absolute; bottom: -50px; width: 100%; text-align: center;
+            color: white; font-size: 14px; opacity: 0.8; animation: blink 2s infinite; letter-spacing: 1px;
+        }
+
+        #letter-paper {
+            display: none; width: 400px; min-height: 500px;
+            background: linear-gradient(to bottom, #fff0f5, #fff); padding: 50px; box-sizing: border-box;
+            border-radius: 5px; box-shadow: 0 0 60px rgba(255, 183, 197, 0.4);
+            font-family: 'Segoe UI', sans-serif; color: #444; position: relative;
+            transform: scale(0.8); opacity: 0; transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: left; line-height: 1.8;
+        }
+        #letter-paper.show { transform: scale(1); opacity: 1; }
+        .close-letter { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #aaa; transition: color 0.3s; }
+        .close-letter:hover { color: #d6336c; }
+        .letter-content h2 { color: #d6336c; font-size: 26px; margin-bottom: 25px; text-align: center; font-weight: bold; }
+        .letter-content p { margin-bottom: 15px; font-size: 16px; }
+
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes blink { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+    </style>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap');
+    </style>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+                "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm"
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div id="loader"></div> 
+
+    <div id="canvas-container"></div>
+
+    <div id="ui-layer">
+        <h1>MY HEART</h1>
+        <div class="upload-wrapper">
+            <label class="upload-btn">
+                Thêm ảnh
+                <input type="file" id="file-input" multiple accept="image/*">
+            </label>
+        </div>
+    </div>
+
+    <div id="gesture-guide">
+        <div class="guide-item">Tay 3 ngón: <strong>Mở Thư</strong> <span class="guide-icon">🤟</span></div>
+        <div class="guide-item">Nắm tay: <strong>Trái tim</strong> <span class="guide-icon">✊</span></div>
+        <div class="guide-item">Tay chữ V: <strong>Hoa Hồng</strong> <span class="guide-icon">✌️</span></div>
+        <div class="guide-item">Xòe tay: <strong>Pháo hoa</strong> <span class="guide-icon">🖐</span></div>
+        <div class="guide-item">Chạm ngón: <strong>Xem ảnh</strong> <span class="guide-icon">👌</span></div>
+    </div>
+
+    <div id="letter-layer">
+        
+        <div id="loading-container">
+            <img id="mascot-gif" src="C:\Users\ADMIN\Downloads\Honkai Impact Eating GIF.gif" alt="Running Kiana">
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+            <div id="loading-text">0%</div>
+        </div>
+
+        <div id="envelope-container">
+            <div class="envelope" id="envelope">
+                <div class="heart-seal">❤️</div>
+            </div>
+            <div class="click-hint">Chạm nhẹ để mở phong thư...</div>
+        </div>
+
+        <div id="letter-paper">
+            <div class="close-letter" onclick="closeLetter()">×</div>
+            <div class="letter-content" style="font-family: 'Dancing Script', cursive; font-size: 20px;">
+                <!-- 🔥 NỘI DUNG THƯ 🔥 -->
+                <h2>Gửi người thương,</h2>
+                <p>
+                    Đã load xong <b>030925%</b> nỗi nhớ rồi nè! <br>
+                    Cảm ơn cậu vì đã luôn ở bên cạnh tớ.
+                </p>
+                <p>
+                    Mỗi hạt lấp lánh ở đây là một niềm vui nhỏ mà tớ muốn gửi đến cậu.
+                    Mong rằng mỗi ngày của cậu đều rực rỡ như đóa hoa hồng pha lê kia.
+                </p>
+                <p style="text-align: right; margin-top: 40px;">
+                    Yêu cậu nhiều ❤️<br>
+                    - Tên bạn -
+                </p>
+                <!-- 🔥 END 🔥 -->
+            </div>
+        </div>
+
+    </div>
+
+    <div id="webcam-wrapper">
+        <video id="webcam" autoplay playsinline style="display:none;"></video>
+        <canvas id="webcam-preview"></canvas>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+        import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
+
+        const CONFIG = {
+            colors: { sakuraLight: 0xffe6ea, sakuraDark: 0xff69b4, crystalBlue: 0xa5f3fc, gold: 0xffd700 },
+            particles: { count: 3000, dustCount: 1000, heartScale: 0.8 },
+            camera: { z: 40 }
+        };
+
+        const STATE = {
+            expansion: 0, morph: 0, 
+            targetExpansion: 0, targetMorph: 0,
+            isFocusing: false, focusTarget: null,
+            hand: { detected: false, x: 0, y: 0 },
+            rotation: { x: 0, y: 0 },
+            currentLightColor: new THREE.Color(CONFIG.colors.sakuraDark),
+            targetLightColor: new THREE.Color(CONFIG.colors.sakuraDark),
+            // Letter & Loading State
+            isLetterMode: false,
+            loadingProgress: 0,
+            isLoadingFinished: false // Cờ đánh dấu đã load xong chưa
+        };
+
+        let scene, camera, renderer, composer;
+        let mainGroup, photoMeshGroup = new THREE.Group();
+        let clock = new THREE.Clock();
+        let particleSystem = []; 
+        let handLandmarker, video, webcamCanvas;
+        let petalGeometry, diamondGeometry, sphereGeometry;
+        let coreLight; 
+
+        // --- LETTER LOGIC ---
+        window.closeLetter = function() {
+            const letterLayer = document.getElementById('letter-layer');
+            letterLayer.style.opacity = 0;
+            letterLayer.style.pointerEvents = 'none';
+            
+            // Reset toàn bộ trạng thái để lần sau mở lại từ đầu
+            setTimeout(() => {
+                document.getElementById('loading-container').style.display = 'block';
+                document.getElementById('envelope-container').style.display = 'none';
+                document.getElementById('letter-paper').classList.remove('show');
+                document.getElementById('letter-paper').style.display = 'none';
+                
+                // Reset các biến loading
+                STATE.loadingProgress = 0;
+                STATE.isLoadingFinished = false;
+                STATE.isLetterMode = false;
+                
+                // Reset UI loading về 0
+                document.getElementById('progress-bar').style.width = '0%';
+                document.getElementById('mascot-gif').style.left = '0%';
+                document.getElementById('loading-text').innerText = '0%';
+            }, 500);
+        }
+
+        function openEnvelope() {
+            const envelope = document.getElementById('envelope');
+            envelope.classList.add('open');
+            setTimeout(() => {
+                document.getElementById('envelope-container').style.display = 'none';
+                const paper = document.getElementById('letter-paper');
+                paper.style.display = 'block';
+                void paper.offsetWidth;
+                paper.classList.add('show');
+            }, 800);
+        }
+        document.getElementById('envelope-container').addEventListener('click', openEnvelope);
+
+        // --- LOADING ANIMATION LOGIC (UPDATED) ---
+        function updateLoading() {
+            if (!STATE.isLetterMode) return;
+            
+            // Giai đoạn 1: Đang chạy loading
+            if (STATE.loadingProgress < 100) {
+                STATE.loadingProgress += 0.5; // Tốc độ chạy (tăng số này nếu muốn nhanh hơn)
+                
+                const bar = document.getElementById('progress-bar');
+                const gif = document.getElementById('mascot-gif');
+                const text = document.getElementById('loading-text');
+
+                bar.style.width = STATE.loadingProgress + '%';
+                gif.style.left = STATE.loadingProgress + '%';
+                
+                // Tính số % hiển thị (Map 0-100 -> 030925)
+                const maxVal = 30925;
+                const currentVal = Math.floor((STATE.loadingProgress / 100) * maxVal);
+                text.innerText = currentVal.toString().padStart(6, '0') + '%';
+            } 
+            // Giai đoạn 2: Đã chạy xong, DỪNG LẠI (Pause)
+            else if (!STATE.isLoadingFinished) {
+                STATE.isLoadingFinished = true; // Đánh dấu đã xong để không chạy vào đây nữa
+                
+                // Set cứng giá trị cuối cùng cho đẹp
+                document.getElementById('loading-text').innerText = '030925%';
+                document.getElementById('progress-bar').style.width = '100%';
+                document.getElementById('mascot-gif').style.left = '100%';
+
+                // --- THỜI GIAN DỪNG (DELAY) Ở ĐÂY ---
+                // 2000ms = 2 giây
+                setTimeout(() => {
+                    document.getElementById('loading-container').style.display = 'none';
+                    document.getElementById('envelope-container').style.display = 'block';
+                }, 2000); 
+            }
+        }
+
+        async function init() {
+            initThree();
+            createGeometries();
+            setupLights();
+            createParticles(); 
+            createDust();     
+            setupPostProcessing();
+            setupEvents();
+            await initMediaPipe();
+            
+            const loader = document.getElementById('loader');
+            loader.style.opacity = 0;
+            setTimeout(() => loader.remove(), 800);
+
+            animate();
+        }
+
+        // [Các hàm setup 3D giữ nguyên như V17]
+        function initThree() {
+            const container = document.getElementById('canvas-container');
+            renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: "high-performance" });
+            renderer.setClearColor(0x000000, 0); 
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ReinhardToneMapping;
+            renderer.toneMappingExposure = 1.5;
+            container.appendChild(renderer.domElement);
+            scene = new THREE.Scene();
+            scene.background = null; 
+            scene.fog = new THREE.FogExp2(0x151030, 0.015); 
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 0, CONFIG.camera.z); 
+            mainGroup = new THREE.Group();
+            scene.add(mainGroup);
+        }
+        function createGeometries() {
+            const shape = new THREE.Shape(); shape.moveTo(0, 0); shape.quadraticCurveTo(0.4, 0.4, 0.2, 0.8); shape.quadraticCurveTo(0.5, 1.2, 0, 1.5); shape.quadraticCurveTo(-0.5, 1.2, -0.2, 0.8); shape.quadraticCurveTo(-0.4, 0.4, 0, 0);
+            petalGeometry = new THREE.ShapeGeometry(shape); petalGeometry.center();
+            diamondGeometry = new THREE.OctahedronGeometry(0.3, 0);
+            sphereGeometry = new THREE.SphereGeometry(0.25, 6, 6);
+        }
+        function setupLights() {
+            const ambient = new THREE.AmbientLight(0xffffff, 0.4); scene.add(ambient);
+            coreLight = new THREE.PointLight(CONFIG.colors.sakuraDark, 3, 40); coreLight.position.set(0, 0, 0); mainGroup.add(coreLight);
+            const dirLight = new THREE.DirectionalLight(0xa5f3fc, 1.5); dirLight.position.set(10, 10, 20); scene.add(dirLight);
+        }
+        function setupPostProcessing() {
+            const renderScene = new RenderPass(scene, camera);
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            bloomPass.threshold = 0.7; bloomPass.strength = 0.5; bloomPass.radius = 0.4;
+            composer = new EffectComposer(renderer); composer.addPass(renderScene); composer.addPass(bloomPass);
+        }
+        class Particle {
+            constructor(mesh, type, isDust = false) {
+                this.mesh = mesh; this.type = type; this.isDust = isDust;
+                this.posHeart = new THREE.Vector3(); this.posRose = new THREE.Vector3(); this.posScatter = new THREE.Vector3();
+                this.baseScale = mesh.scale.x; this.pulseOffset = Math.random() * 100;
+                const speedMult = (type === 'PHOTO') ? 0.1 : 1.5;
+                this.spinSpeed = new THREE.Vector3((Math.random() - 0.5) * speedMult, (Math.random() - 0.5) * speedMult, (Math.random() - 0.5) * speedMult);
+                this.calculatePositions();
+            }
+            calculatePositions() {
+                let t = Math.random() * Math.PI * 2;
+                let x = 16 * Math.pow(Math.sin(t), 3); let y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t); let z = (Math.random() - 0.5) * 16;
+                const rHeart = 0.6 + (Math.random() * 0.4); this.posHeart.set(x * 0.8 * rHeart, y * 0.8 * rHeart, z * rHeart);
+                const roseScale = 1.2; let u = Math.random(); let v = Math.random(); let theta = v * Math.PI * 2 * 3; let radius = 10 * u; let roseY = (u - 0.5) * 15;
+                let petalMod = 1 + 0.3 * Math.sin(theta * 5); let roseX = radius * Math.cos(theta) * petalMod; let roseZ = radius * Math.sin(theta) * petalMod;
+                if (Math.random() < 0.1) { roseX = (Math.random()-0.5) * 1.5; roseZ = (Math.random()-0.5) * 1.5; roseY = -10 - Math.random() * 20; }
+                this.posRose.set(roseX * roseScale, roseY * roseScale, roseZ * roseScale);
+                let rScatter = this.isDust ? (25 + Math.random()*30) : (15 + Math.random()*25);
+                const sTheta = Math.random() * Math.PI * 2; const sPhi = Math.acos(2 * Math.random() - 1);
+                this.posScatter.set(rScatter * Math.sin(sPhi) * Math.cos(sTheta), rScatter * Math.sin(sPhi) * Math.sin(sTheta), rScatter * Math.cos(sPhi));
+            }
+            update(dt, expansion, morph, isFocusing, focusTargetMesh, elapsedTime) {
+                let shapePos = new THREE.Vector3().lerpVectors(this.posHeart, this.posRose, morph);
+                let target = new THREE.Vector3().lerpVectors(shapePos, this.posScatter, expansion);
+                if (isFocusing) {
+                    if (this.mesh === focusTargetMesh) {
+                        const desiredWorldPos = new THREE.Vector3(0, -1.5, 25); 
+                        const invMatrix = new THREE.Matrix4().copy(mainGroup.matrixWorld).invert();
+                        target = desiredWorldPos.applyMatrix4(invMatrix);
+                    } else { target = this.posScatter; }
+                }
+                if (expansion < 0.1 && morph < 0.2 && !this.isDust && !isFocusing) {
+                    const beat = Math.pow(Math.sin(elapsedTime * 3 + this.pulseOffset), 6) * 0.3;
+                    const pulseVec = this.posHeart.clone().normalize().multiplyScalar(beat);
+                    target.add(pulseVec);
+                }
+                const moveSpeed = (isFocusing && this.mesh === focusTargetMesh) ? 6.0 : 3.0;
+                this.mesh.position.lerp(target, moveSpeed * dt);
+                if (isFocusing && this.mesh === focusTargetMesh) { this.mesh.lookAt(camera.position); } 
+                else {
+                    const spinFactor = 0.5 + expansion * 2.0; 
+                    this.mesh.rotation.x += this.spinSpeed.x * dt * spinFactor;
+                    this.mesh.rotation.y += this.spinSpeed.y * dt * spinFactor;
+                    if (morph > 0.8 && this.type === 'PETAL') { this.mesh.rotation.x *= 0.95; }
+                }
+                let s = this.baseScale;
+                if (this.isDust) { s = this.baseScale * (0.5 + 0.5 * Math.sin(elapsedTime * 5 + this.mesh.id)); } 
+                else if (this.type === 'PHOTO') {
+                    if (isFocusing && this.mesh === focusTargetMesh) s = 1.0;
+                    else if (expansion > 0.8) s = 1.0; else s = 0.0; 
+                }
+                this.mesh.scale.lerp(new THREE.Vector3(s,s,s), 5*dt);
+            }
+        }
+        function createParticles() {
+            const petalMat = new THREE.MeshStandardMaterial({ color: CONFIG.colors.sakuraLight, emissive: CONFIG.colors.sakuraDark, emissiveIntensity: 0.5, roughness: 0.4, metalness: 0.1, side: THREE.DoubleSide });
+            const crystalMat = new THREE.MeshStandardMaterial({ color: CONFIG.colors.crystalBlue, emissive: CONFIG.colors.crystalBlue, emissiveIntensity: 0.9, roughness: 0.1, metalness: 0.9 });
+            const orbMat = new THREE.MeshStandardMaterial({ color: CONFIG.colors.gold, emissive: 0xffaa00, emissiveIntensity: 0.7, roughness: 0.2 });
+            for (let i = 0; i < CONFIG.particles.count; i++) {
+                const rand = Math.random(); let mesh, type;
+                if (rand < 0.65) { mesh = new THREE.Mesh(petalGeometry, petalMat); type = 'PETAL'; mesh.scale.set(0.25, 0.25, 0.25); } 
+                else if (rand < 0.85) { mesh = new THREE.Mesh(diamondGeometry, crystalMat); type = 'CRYSTAL'; mesh.scale.set(0.22, 0.22, 0.22); } 
+                else { mesh = new THREE.Mesh(sphereGeometry, orbMat); type = 'ORB'; mesh.scale.set(0.18, 0.18, 0.18); }
+                mesh.rotation.set(Math.random()*6, Math.random()*6, Math.random()*6);
+                mainGroup.add(mesh); particleSystem.push(new Particle(mesh, type, false));
+            }
+            mainGroup.add(photoMeshGroup);
+        }
+        function createDust() {
+            const geo = new THREE.BufferGeometry(); const pos = [];
+            for(let i=0; i<CONFIG.particles.dustCount; i++) { pos.push((Math.random()-0.5)*60, (Math.random()-0.5)*60, (Math.random()-0.5)*60); }
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+            const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.15, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending });
+            const dust = new THREE.Points(geo, mat); mainGroup.add(dust);
+        }
+        function addPhotoToScene(texture, aspectRatio) {
+            let width, height; const maxSize = 5.0; 
+            if (aspectRatio >= 1) { width = maxSize; height = maxSize / aspectRatio; } else { width = maxSize * aspectRatio; height = maxSize; }
+            const frameGeo = new THREE.BoxGeometry(width + 0.2, height + 0.2, 0.1);
+            const frameMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.5, roughness: 0.2, emissive: 0x222222 });
+            const frame = new THREE.Mesh(frameGeo, frameMat);
+            const photoGeo = new THREE.PlaneGeometry(width, height);
+            const photoMat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+            const photo = new THREE.Mesh(photoGeo, photoMat); photo.position.z = 0.06; 
+            const group = new THREE.Group(); group.add(frame); group.add(photo); group.scale.set(0,0,0);
+            photoMeshGroup.add(group); particleSystem.push(new Particle(group, 'PHOTO', false));
+        }
+
+        async function initMediaPipe() {
+            video = document.getElementById('webcam');
+            webcamCanvas = document.getElementById('webcam-preview');
+            const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
+            handLandmarker = await HandLandmarker.createFromOptions(vision, {
+                baseOptions: { modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`, delegate: "GPU" },
+                runningMode: "VIDEO", numHands: 1
+            });
+            if (navigator.mediaDevices?.getUserMedia) {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.addEventListener("loadeddata", predictWebcam);
+            }
+        }
+
+        let lastVideoTime = -1;
+        async function predictWebcam() {
+            if (video.currentTime !== lastVideoTime) {
+                lastVideoTime = video.currentTime;
+                if (handLandmarker) {
+                    const result = handLandmarker.detectForVideo(video, performance.now());
+                    processGestures(result);
+                }
+            }
+            requestAnimationFrame(predictWebcam);
+        }
+
+        function processGestures(result) {
+            if (STATE.isLetterMode) return; 
+
+            if (result.landmarks && result.landmarks.length > 0) {
+                STATE.hand.detected = true;
+                const lm = result.landmarks[0];
+                STATE.hand.x = (lm[9].x - 0.5) * 2; STATE.hand.y = (lm[9].y - 0.5) * 2;
+
+                const thumb = lm[4]; const index = lm[8]; const middle = lm[12]; const ring = lm[16]; const pinky = lm[20]; const wrist = lm[0];
+                const pinchDist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
+                const tips = [index, middle, ring, pinky];
+                let avgDist = 0; tips.forEach(t => avgDist += Math.hypot(t.x - wrist.x, t.y - wrist.y)); avgDist /= 4;
+
+                const dIndex = Math.hypot(index.x - wrist.x, index.y - wrist.y);
+                const dMiddle = Math.hypot(middle.x - wrist.x, middle.y - wrist.y);
+                const dRing = Math.hypot(ring.x - wrist.x, ring.y - wrist.y);
+                const dPinky = Math.hypot(pinky.x - wrist.x, pinky.y - wrist.y);
+                
+                const isVsign = (dIndex > 0.3 && dMiddle > 0.3 && dRing < 0.25 && dPinky < 0.25);
+                const isThreeFingers = (dIndex > 0.3 && dMiddle > 0.3 && dRing > 0.3 && dPinky < 0.25);
+
+                if (isThreeFingers) {
+                    activateLetterMode();
+                } else {
+                    if (pinchDist < 0.05) {
+                        STATE.isFocusing = true;
+                        if (!STATE.focusTarget) {
+                            const photos = particleSystem.filter(p => p.type === 'PHOTO');
+                            if (photos.length) STATE.focusTarget = photos[Math.floor(Math.random()*photos.length)].mesh;
+                        }
+                    } else {
+                        STATE.isFocusing = false; STATE.focusTarget = null;
+                    }
+
+                    if (isVsign) { STATE.targetMorph = 1; STATE.targetLightColor.setHex(CONFIG.colors.crystalBlue); } 
+                    else { STATE.targetMorph = 0; STATE.targetLightColor.setHex(CONFIG.colors.sakuraDark); }
+
+                    const minOpen = 0.2; const maxOpen = 0.55;
+                    let val = (avgDist - minOpen) / (maxOpen - minOpen);
+                    if (val < 0) val = 0; if (val > 1) val = 1;
+                    STATE.targetExpansion = val;
+                }
+            } else {
+                STATE.hand.detected = false; STATE.isFocusing = false;
+                STATE.targetExpansion = 0; STATE.targetMorph = 0;
+            }
+        }
+
+        function activateLetterMode() {
+            if (STATE.isLetterMode) return;
+            STATE.isLetterMode = true;
+            const layer = document.getElementById('letter-layer');
+            layer.style.opacity = 1;
+            layer.style.pointerEvents = 'auto';
+        }
+
+        function handleImageUpload(e) { const files = e.target.files; if(!files.length) return; Array.from(files).forEach(f => { const reader = new FileReader(); reader.onload = (ev) => { const img = new Image(); img.src = ev.target.result; img.onload = () => { const aspectRatio = img.width / img.height; const texture = new THREE.Texture(img); texture.colorSpace = THREE.SRGBColorSpace; texture.minFilter = THREE.LinearFilter; texture.needsUpdate = true; addPhotoToScene(texture, aspectRatio); }; }; reader.readAsDataURL(f); }); }
+        function setupEvents() { window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); composer.setSize(window.innerWidth, window.innerHeight); }); document.getElementById('file-input').addEventListener('change', handleImageUpload); window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'h') { const controls = document.querySelector('.upload-wrapper'); controls.classList.toggle('ui-hidden'); const guide = document.getElementById('gesture-guide'); guide.classList.toggle('ui-hidden'); } }); }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt = clock.getDelta();
+            const elapsed = clock.elapsedTime;
+
+            updateLoading();
+
+            if (!STATE.isLetterMode) {
+                STATE.expansion += (STATE.targetExpansion - STATE.expansion) * 4.0 * dt;
+                STATE.morph += (STATE.targetMorph - STATE.morph) * 2.0 * dt; 
+                if (STATE.hand.detected && !STATE.isFocusing) {
+                    const targetRotY = STATE.hand.x * 0.8; const targetRotX = STATE.hand.y * 0.8;
+                    STATE.rotation.y += (targetRotY - STATE.rotation.y) * 3.0 * dt; STATE.rotation.x += (targetRotX - STATE.rotation.x) * 3.0 * dt;
+                } else {
+                    STATE.rotation.y += 0.2 * dt; STATE.rotation.x += (0 - STATE.rotation.x) * 2.0 * dt; 
+                }
+            } else {
+                STATE.rotation.y += 0.1 * dt;
+            }
+
+            STATE.currentLightColor.lerp(STATE.targetLightColor, 2.0 * dt);
+            if (coreLight) coreLight.color.copy(STATE.currentLightColor);
+
+            mainGroup.rotation.y = STATE.rotation.y;
+            mainGroup.rotation.x = STATE.rotation.x;
+
+            particleSystem.forEach(p => p.update(dt, STATE.expansion, STATE.morph, STATE.isFocusing, STATE.focusTarget, elapsed));
+            composer.render();
+        }
+
+        init();
+    </script>
+</body>
+</html>
