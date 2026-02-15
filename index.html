@@ -1,10 +1,10 @@
-<!-- HELLO STRANGER | V18: LOADING PAUSE AT 030925% (Dừng lại ngắm số đẹp rồi mới hiện thư) -->
+<!-- HELLO STRANGER | V20: FINAL COMPLETED VERSION (Responsive Letter + Icon + Liquid Motion) -->
 <!DOCTYPE html>
 <html lang="VN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAKURA_HEART_V18_MEMORIES</title>
+    <title>Valen-For-U 💐</title>
     <style>
         body { 
             margin: 0; 
@@ -84,7 +84,7 @@
             backdrop-filter: blur(8px);
         }
 
-        #loading-container { width: 70%; max-width: 600px; text-align: center; position: relative; }
+        #loading-container { width: 80%; max-width: 600px; text-align: center; position: relative; }
         .progress-track {
             width: 100%; height: 8px; background: rgba(255,255,255,0.1);
             border-radius: 10px; position: relative; margin-top: 80px; 
@@ -94,11 +94,10 @@
             border-radius: 10px; box-shadow: 0 0 15px #ff9a9e; transition: width 0.1s linear;
         }
 
-        /* GIF TO & RÕ */
         #mascot-gif {
             position: absolute;
-            width: 120px; height: auto; 
-            top: -110px; left: 0%;
+            width: 100px; height: auto; 
+            top: -90px; left: 0%;
             transform: translateX(-50%); 
             transition: left 0.1s linear;
             z-index: 10;
@@ -130,19 +129,59 @@
             color: white; font-size: 14px; opacity: 0.8; animation: blink 2s infinite; letter-spacing: 1px;
         }
 
+        /* --- CSS KHUNG THƯ (RESPONSIVE FIX) --- */
         #letter-paper {
-            display: none; width: 400px; min-height: 500px;
-            background: linear-gradient(to bottom, #fff0f5, #fff); padding: 50px; box-sizing: border-box;
-            border-radius: 5px; box-shadow: 0 0 60px rgba(255, 183, 197, 0.4);
-            font-family: 'Segoe UI', sans-serif; color: #444; position: relative;
-            transform: scale(0.8); opacity: 0; transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: left; line-height: 1.8;
+            display: none;
+            width: 90%;              
+            max-width: 650px;        
+            max-height: 85vh;        /* Giới hạn chiều cao để không tràn màn hình */
+            overflow-y: auto;        /* Tự động hiện thanh cuộn */
+            
+            background: linear-gradient(to bottom, #fff0f5, #fff); 
+            padding: 30px 40px; 
+            box-sizing: border-box;
+            border-radius: 8px; 
+            box-shadow: 0 0 60px rgba(255, 183, 197, 0.4);
+            
+            font-family: 'Segoe UI', sans-serif; 
+            color: #444; 
+            position: relative;
+            transform: scale(0.8); opacity: 0; 
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            
+            text-align: justify;
+            line-height: 1.6;
         }
         #letter-paper.show { transform: scale(1); opacity: 1; }
-        .close-letter { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #aaa; transition: color 0.3s; }
+
+        /* Tùy chỉnh thanh cuộn đẹp hơn */
+        #letter-paper::-webkit-scrollbar { width: 6px; }
+        #letter-paper::-webkit-scrollbar-track { background: transparent; }
+        #letter-paper::-webkit-scrollbar-thumb { background: #ffb7c5; border-radius: 10px; }
+
+        .close-letter { 
+            position: sticky; top: 0; right: 0; float: right;
+            font-size: 28px; cursor: pointer; color: #aaa; margin-left: 10px;
+            z-index: 20;
+        }
         .close-letter:hover { color: #d6336c; }
-        .letter-content h2 { color: #d6336c; font-size: 26px; margin-bottom: 25px; text-align: center; font-weight: bold; }
-        .letter-content p { margin-bottom: 15px; font-size: 16px; }
+        
+        .letter-content { clear: both; }
+        .letter-content h2 { 
+            color: #d6336c; font-size: 24px; margin-bottom: 20px; 
+            text-align: center; font-weight: bold; 
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            flex-wrap: wrap; /* Cho phép xuống dòng nếu màn hình bé */
+        }
+        .letter-content p { margin-bottom: 15px; font-size: 18px; }
+
+        /* RESPONSIVE CHO DI ĐỘNG */
+        @media (max-width: 600px) {
+            #letter-paper { padding: 20px 25px; max-height: 90vh; }
+            .letter-content h2 { font-size: 20px; }
+            .letter-content p { font-size: 16px; line-height: 1.5; }
+            #mascot-gif { width: 80px; top: -70px; }
+        }
 
         @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         @keyframes blink { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
@@ -190,39 +229,69 @@
 
     <div id="letter-layer">
         
+        <!-- LOADING -->
         <div id="loading-container">
-            <img id="mascot-gif" src="kiana.gif" alt="Running Kiana">
+            
+            <img id="mascot-gif" src="C:\Users\ADMIN\Downloads\image\kianaEat.gif" alt="Running Kiana">
+            
             <div class="progress-track">
                 <div class="progress-fill" id="progress-bar"></div>
             </div>
             <div id="loading-text">0%</div>
         </div>
 
+        <!-- ENVELOPE -->
         <div id="envelope-container">
             <div class="envelope" id="envelope">
                 <div class="heart-seal">❤️</div>
             </div>
-            <div class="click-hint">Chạm nhẹ để mở phong thư...</div>
+            <div class="click-hint">Cống nạp 36kg rau má rồi chạm để mở phong thư...</div>
         </div>
 
+        <!-- LETTER PAPER -->
         <div id="letter-paper">
             <div class="close-letter" onclick="closeLetter()">×</div>
-            <div class="letter-content" style="font-family: 'Dancing Script', cursive; font-size: 20px;">
+            <div class="letter-content" style="font-family: 'Dancing Script', cursive;">
+                
                 <!-- 🔥 NỘI DUNG THƯ 🔥 -->
-                <h2>Gửi người thương,</h2>
+                <h2>Gửi em, Yến Ngọc của anh
+                    
+                    <img src="C:\Users\ADMIN\Downloads\image\meiLike.png" alt="icon" style="width: 50px; height: auto; border-radius: 5px;">
+                </h2>
+                
                 <p>
-                    Đã load xong <b>030925%</b> nỗi nhớ rồi nè! <br>
-                    Cảm ơn cậu vì đã luôn ở bên cạnh tớ.
+                    Đã load xong <b>030925%</b> mức độ gey gey rồi, mồm? Cảm ơn em vì đã luôn ở bên cạnh anh. <br>
+                    Chào mừng em đến với quả trứng ẩn của ngày hôm nay. 
+                    À không, 3 ngày trôi mẹ rồi. Tóm tắt nhanh là như này: 
                 </p>
                 <p>
-                    Mỗi hạt lấp lánh ở đây là một niềm vui nhỏ mà tớ muốn gửi đến cậu.
-                    Mong rằng mỗi ngày của cậu đều rực rỡ như đóa hoa hồng pha lê kia.
+                    À đâu, trước anh có kể cho m nghe nguyên nhân rồi. Ngày 12 chổng đầu lên làm, làm xong một nửa thấy skibidi quá vất đấy, 
+                    skip đến ngày 13 dọn nhà các thứ xong mệt quá tối chết cụ đến sáng hôm sau luôn, ngày 14 làm như chạy chết chỉ làm cho xong, 
+                    xong vẫn đ kịp để tặng cho m.
                 </p>
-                <p style="text-align: right; margin-top: 40px;">
-                    Yêu cậu nhiều ❤️<br>
-                    - Tên bạn -
+                <p>
+                    Thì là, đây là năm đầu tiên anh với em đón Valentine và Tết cùng nhau, hình như trước đó có đón Tết một lần rồi 
+                    (mà là bên dis hay sao ấy, hồi đấy là còn chưa nhắn lại với nhau nhiều). 
+                </p>
+                <p>
+                    Như đã nói ở trên, thì đây là năm đầu tiên hai đứa có một buổi Valentine cùng nhau với tư cách là người yêu, 
+                    nên anh muốn làm gì đấy để úp em (này là tại đứa nào úp trước nhé, giờ bố trả thù).
+                </p>
+                <p>
+                    Nên web này ra đời, thật ra là anh ấp ủ cái này từ lâu rồi, lúc test thử còn nghịch nghịch, 
+                    còn đến lúc mấy ngày nữa là mới ngóc đầu lên làm full setting. Nên lúc chuẩn bị gửi anh có bảo em bật lap sẵn đấy.
+                </p>
+                <p>
+                    Nói chung thì, chúc em có một Valentine và cũng như là một cái Tết vui vẻ, luôn tràn đầy sức khỏe, 
+                    hạnh phúc bên gia đình, bạn bè và người thân.
+                </p>
+                <p style="text-align: right; margin-top: 40px; font-weight: bold;">
+                    Yêu em nhiều ❤️<br>
+                - 裴南庆 - <br>
+                <img src="C:\Users\ADMIN\Downloads\image\meiSign.png" alt="icon" style="width: 130px; height: auto; border-radius: 5px;">
                 </p>
                 <!-- 🔥 END 🔥 -->
+
             </div>
         </div>
 
@@ -254,10 +323,9 @@
             rotation: { x: 0, y: 0 },
             currentLightColor: new THREE.Color(CONFIG.colors.sakuraDark),
             targetLightColor: new THREE.Color(CONFIG.colors.sakuraDark),
-            // Letter & Loading State
             isLetterMode: false,
             loadingProgress: 0,
-            isLoadingFinished: false // Cờ đánh dấu đã load xong chưa
+            isLoadingFinished: false 
         };
 
         let scene, camera, renderer, composer;
@@ -268,25 +336,18 @@
         let petalGeometry, diamondGeometry, sphereGeometry;
         let coreLight; 
 
-        // --- LETTER LOGIC ---
         window.closeLetter = function() {
             const letterLayer = document.getElementById('letter-layer');
             letterLayer.style.opacity = 0;
             letterLayer.style.pointerEvents = 'none';
-            
-            // Reset toàn bộ trạng thái để lần sau mở lại từ đầu
             setTimeout(() => {
                 document.getElementById('loading-container').style.display = 'block';
                 document.getElementById('envelope-container').style.display = 'none';
                 document.getElementById('letter-paper').classList.remove('show');
                 document.getElementById('letter-paper').style.display = 'none';
-                
-                // Reset các biến loading
                 STATE.loadingProgress = 0;
                 STATE.isLoadingFinished = false;
                 STATE.isLetterMode = false;
-                
-                // Reset UI loading về 0
                 document.getElementById('progress-bar').style.width = '0%';
                 document.getElementById('mascot-gif').style.left = '0%';
                 document.getElementById('loading-text').innerText = '0%';
@@ -306,37 +367,23 @@
         }
         document.getElementById('envelope-container').addEventListener('click', openEnvelope);
 
-        // --- LOADING ANIMATION LOGIC (UPDATED) ---
         function updateLoading() {
             if (!STATE.isLetterMode) return;
-            
-            // Giai đoạn 1: Đang chạy loading
             if (STATE.loadingProgress < 100) {
-                STATE.loadingProgress += 0.5; // Tốc độ chạy (tăng số này nếu muốn nhanh hơn)
-                
+                STATE.loadingProgress += 0.5; 
                 const bar = document.getElementById('progress-bar');
                 const gif = document.getElementById('mascot-gif');
                 const text = document.getElementById('loading-text');
-
                 bar.style.width = STATE.loadingProgress + '%';
                 gif.style.left = STATE.loadingProgress + '%';
-                
-                // Tính số % hiển thị (Map 0-100 -> 030925)
                 const maxVal = 30925;
                 const currentVal = Math.floor((STATE.loadingProgress / 100) * maxVal);
                 text.innerText = currentVal.toString().padStart(6, '0') + '%';
-            } 
-            // Giai đoạn 2: Đã chạy xong, DỪNG LẠI (Pause)
-            else if (!STATE.isLoadingFinished) {
-                STATE.isLoadingFinished = true; // Đánh dấu đã xong để không chạy vào đây nữa
-                
-                // Set cứng giá trị cuối cùng cho đẹp
+            } else if (!STATE.isLoadingFinished) {
+                STATE.isLoadingFinished = true; 
                 document.getElementById('loading-text').innerText = '030925%';
                 document.getElementById('progress-bar').style.width = '100%';
                 document.getElementById('mascot-gif').style.left = '100%';
-
-                // --- THỜI GIAN DỪNG (DELAY) Ở ĐÂY ---
-                // 2000ms = 2 giây
                 setTimeout(() => {
                     document.getElementById('loading-container').style.display = 'none';
                     document.getElementById('envelope-container').style.display = 'block';
@@ -353,15 +400,12 @@
             setupPostProcessing();
             setupEvents();
             await initMediaPipe();
-            
             const loader = document.getElementById('loader');
             loader.style.opacity = 0;
             setTimeout(() => loader.remove(), 800);
-
             animate();
         }
 
-        // [Các hàm setup 3D giữ nguyên như V17]
         function initThree() {
             const container = document.getElementById('canvas-container');
             renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: "high-performance" });
@@ -604,6 +648,3 @@
     </script>
 </body>
 </html>
-
-
-
